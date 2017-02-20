@@ -28,7 +28,11 @@ public class AbstractBeanFactory implements BeanFactory{
 			throw new IllegalArgumentException("No bean named " + name + " is defined");
 		
 	}
-
+	
+	protected Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
+		return null;
+	}
+	
 	public <T> T getBean(String name, Class<T> requiredType) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
