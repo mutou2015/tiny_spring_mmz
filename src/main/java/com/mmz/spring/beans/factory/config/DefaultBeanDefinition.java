@@ -6,6 +6,8 @@ public class DefaultBeanDefinition implements BeanDefinition {
 	
 	private Class beanClass;
 	
+	private String beanClassName;
+	
 	private PropertyValues propertyValues;
 
 	public Object getBean() {
@@ -30,6 +32,14 @@ public class DefaultBeanDefinition implements BeanDefinition {
 
 	public void setBeanClass(Class beanClass) {
 		this.beanClass = beanClass;
+	}
+
+	public String getBeanClassName() {
+		return beanClassName;
+	}
+
+	public void setBeanClassName(String beanClassName) {
+		this.beanClassName = beanClassName;
 	}
 	
 	

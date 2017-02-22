@@ -58,6 +58,11 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	}
 	
+	public void registerBeanDefinition(String name, BeanDefinition beanDefinition) throws Exception {
+		beanDefinitionMap.put(name, beanDefinition);
+		beanDefinitionNames.add(name);
+	}
+	
 	protected Object initializeBean(Object bean, String name) throws Exception {
 		for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
 			bean = beanPostProcessor.postProcessBeforeInitialization(bean, name);

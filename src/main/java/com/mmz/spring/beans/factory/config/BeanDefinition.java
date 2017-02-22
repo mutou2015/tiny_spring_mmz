@@ -12,4 +12,6 @@ public interface BeanDefinition {
 	void setBean(Object bean);
 	
 	PropertyValues getPropertyValues();
+	
+	void setBeanClassName(String beanClassName);
 }
