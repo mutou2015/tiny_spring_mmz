@@ -13,7 +13,9 @@ public class UrlResource implements Resource {
         this.url = url;
     }
 
-    
+    /**
+     * 通过URL资源返回其字节流，是Resource的实现
+     * */
     public InputStream getInputStream() throws IOException{
         URLConnection urlConnection = url.openConnection();
         urlConnection.connect();

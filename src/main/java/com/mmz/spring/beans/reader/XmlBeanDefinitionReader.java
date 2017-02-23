@@ -25,8 +25,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		// TODO Auto-generated constructor stub
 	}
 	/**
-	 * 从路径中加载xml或者其他文件，作为BeanDefinitions类实例定义信息
-	 * 
+	 * 从string类型的path中加载beandefinition，从BeanDefinitionReader接口继承实现
+	 * 调用resourceLoader的getResource方法把文件转换为字节流
 	 * */
 	public void loadBeanDefinitions(String location) throws Exception {
 		InputStream inputStream = getResourceLoader().getResource(location).getInputStream();
@@ -74,6 +74,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 	protected void processBeanDefinition(Element ele) {
 		String name = ele.getAttribute("id");
 		String className = ele.getAttribute("class");
+		// 从这里开始往beanDefinition写入bean定义信息，可以看出来此处并没有进行newInstance()的操作，而是留到getBean()的时候
 		BeanDefinition beanDefinition = new DefaultBeanDefinition();
 		processProperty(ele, beanDefinition);
 		beanDefinition.setBeanClassName(className);
