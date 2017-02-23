@@ -25,14 +25,14 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	 * Beanfactroy的核心方法，根据名字获取bean
 	 * */
 	public Object getBean(String name) throws Exception {
-		// 首先获取BeanDefinition，bean的定义信息
+		// 首先根据该id获取对应的BeanDefinition，bean的定义信息
 		BeanDefinition beanDefinition = beanDefinitionMap.get(name);
 		if(beanDefinition!=null){
-			// 这里要注意的是，有可能此时BeanDefinition是刚刚加载，还没有把真实的bean实例创建出来
-			// 更不用说属性的自动装配
+			// 获取了BeanDefinition之后，如果是第一次获取，BeanDefinition还没有做setbean的操作，所以此时class有，但是bean为空
+			// 当然属性的自动装配也就更没有开始
 			Object bean = beanDefinition.getBean();
 			if (bean == null) {
-				// 执行真正的创建bean过程，把beanDefinition作为参数传入，便于回调赋值
+				// 执行真正的创建bean过程，把beanDefinition作为参数传入，用于在创建之后回调setBean()
 				bean=doCreateBean(beanDefinition);
 				
 			}
@@ -75,6 +75,9 @@ public abstract class AbstractBeanFactory implements BeanFactory{
         return bean;
 	}
 	
+	/**
+	 * 根据类的Class对象创建类的实例
+	 * */
 	protected Object createBeanInstance(BeanDefinition beanDefinition) throws Exception {
 		return beanDefinition.getBeanClass().newInstance();
 	}

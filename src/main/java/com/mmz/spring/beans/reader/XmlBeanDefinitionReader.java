@@ -79,7 +79,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		beanDefinition.setBeanClassName(className);
 		getRegistry().put(name, beanDefinition);
 	}
-
+	/**
+	 * 获取bean的property标签NodeList：propertyNode
+	 * */
 	private void processProperty(Element ele, BeanDefinition beanDefinition) {
 		NodeList propertyNode = ele.getElementsByTagName("property");
 		for (int i = 0; i < propertyNode.getLength(); i++) {

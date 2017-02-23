@@ -18,13 +18,15 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 	protected void applyPropertyValues(Object bean, BeanDefinition beanDefinition) throws Exception {
 		if (bean instanceof BeanFactoryAware) {
 			// BeanFactoryAware如果是该类型，则把容器的引用注入，从而让该bean获取容器操作的方法和属性
-			// 据说是为了aop服务，暂存疑
+			// 据说是为了aop服务，暂存疑?
 			((BeanFactoryAware) bean).setBeanFactory(this);
 		}
 		// 遍历beanDefinition类定义信息中属性列表
 		for (PropertyValue propertyValue : beanDefinition.getPropertyValues().getPropertyValues()) {
 			Object value = propertyValue.getValue();
-			// 取出的值如果是引用类型，则去获取该引用类型的实例，递归
+			// 取出的值如果是引用类型，则尝试根据beanName去Beandefinitions中获取该引用类型的实例，
+			// 从这个递归调用可以看出，如果一个bean的属性的引用类型尚未在beanDefinition中setBean(),
+			// 也就是所谓的创建实例和自动装配，那么会优先进行这个引用类型的装配，完成之后再继续上一层bean的装配
 			if (value instanceof BeanReference) {
 				BeanReference beanReference = (BeanReference) value;
 				value = getBean(beanReference.getName());
