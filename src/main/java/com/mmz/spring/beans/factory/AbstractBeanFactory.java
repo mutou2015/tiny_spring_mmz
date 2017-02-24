@@ -97,4 +97,11 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 		return beans;
 	}
 
+	
+	public void setBeanDefinitionMap(Map<String, BeanDefinition> beanDefinitionMap) {
+		this.beanDefinitionMap = beanDefinitionMap;
+	}
+	
+	
+
 }

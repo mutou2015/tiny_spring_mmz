@@ -1,5 +1,7 @@
 package com.mmz.spring.beans.factory.config;
 
+
+
 public class DefaultBeanDefinition implements BeanDefinition {
 	
 	private Object bean;
@@ -8,7 +10,7 @@ public class DefaultBeanDefinition implements BeanDefinition {
 	
 	private String beanClassName;
 	
-	private PropertyValues propertyValues;
+	private PropertyValues propertyValues = new PropertyValues();
 
 	public Object getBean() {
 		return bean;
@@ -40,6 +42,11 @@ public class DefaultBeanDefinition implements BeanDefinition {
 
 	public void setBeanClassName(String beanClassName) {
 		this.beanClassName = beanClassName;
+		try {
+			this.beanClass = Class.forName(beanClassName);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	

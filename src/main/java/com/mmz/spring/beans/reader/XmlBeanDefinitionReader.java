@@ -10,26 +10,28 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.mmz.spring.beans.factory.BeanFactory;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.BeanReference;
 import com.mmz.spring.beans.factory.config.DefaultBeanDefinition;
 import com.mmz.spring.beans.factory.config.PropertyValue;
+import com.mmz.spring.beans.factory.config.Resource;
 import com.mmz.spring.beans.factory.config.ResourceLoader;
 
 
 
 public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 
-	protected XmlBeanDefinitionReader(ResourceLoader resourceLoader) {
-		super(resourceLoader);
+	public XmlBeanDefinitionReader(BeanFactory beanFactory) {
+		super(beanFactory);
 		// TODO Auto-generated constructor stub
 	}
 	/**
 	 * 从string类型的path中加载beandefinition，从BeanDefinitionReader接口继承实现
 	 * 调用resourceLoader的getResource方法把文件转换为字节流
 	 * */
-	public void loadBeanDefinitions(String location) throws Exception {
-		InputStream inputStream = getResourceLoader().getResource(location).getInputStream();
+	public void loadBeanDefinitions(Resource resource) throws Exception {
+		InputStream inputStream = resource.getInputStream();
 		doLoadBeanDefinitions(inputStream);
 		
 	}
@@ -42,6 +44,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		Document doc = docBuilder.parse(inputStream);
 		// 解析bean
 		registerBeanDefinitions(doc);
+		getBeanFactory().setBeanDefinitionMap(getRegistry());
 		inputStream.close();
 	}
 	// 这个方法感觉有点多余
