@@ -1,0 +1,37 @@
+package test.ioc;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import test.entity.Person;
+
+import com.mmz.spring.beans.factory.AutowireCapableBeanFactory;
+import com.mmz.spring.beans.factory.BeanFactory;
+import com.mmz.spring.beans.factory.config.Resource;
+import com.mmz.spring.beans.factory.config.ResourceLoader;
+import com.mmz.spring.beans.factory.config.UrlResource;
+import com.mmz.spring.beans.reader.BeanDefinitionReader;
+import com.mmz.spring.beans.reader.XmlBeanDefinitionReader;
+
+public class Test_BeanFactory {
+
+	@Test
+	public void test_ioc() {
+		ResourceLoader rl= new ResourceLoader();
+		Resource rs=rl.getResource("ioc.xml");
+		AutowireCapableBeanFactory beanFactory = new AutowireCapableBeanFactory();
+		BeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
+		try {
+			beanDefinitionReader.loadBeanDefinitions(rs);
+			Person person = (Person) beanFactory.getBean("person");
+			System.out.println(person.getName());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+}

@@ -1,0 +1,6 @@
+<beans>
+	<bean id="person" class="test.entity.Person">
+		<property name="name" value="Mark"></property>
+		<property name="age" value="23"></property>
+	</bean>
+</beans>
