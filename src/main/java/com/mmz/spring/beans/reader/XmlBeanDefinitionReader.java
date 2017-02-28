@@ -15,8 +15,8 @@ import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.BeanReference;
 import com.mmz.spring.beans.factory.config.DefaultBeanDefinition;
 import com.mmz.spring.beans.factory.config.PropertyValue;
-import com.mmz.spring.beans.factory.config.Resource;
-import com.mmz.spring.beans.factory.config.ResourceLoader;
+import com.mmz.spring.beans.resource.Resource;
+import com.mmz.spring.beans.resource.ResourceLoader;
 
 
 
@@ -85,8 +85,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 	}
 	/**
 	 * 获取bean的property标签NodeList：propertyNode
+	 * @throws ClassNotFoundException 
 	 * */
-	private void processProperty(Element ele, BeanDefinition beanDefinition) {
+	private void processProperty(Element ele, BeanDefinition beanDefinition)  {
 		NodeList propertyNode = ele.getElementsByTagName("property");
 		for (int i = 0; i < propertyNode.getLength(); i++) {
 			Node node = propertyNode.item(i);
@@ -94,7 +95,19 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 				Element propertyEle = (Element) node;
 				String name = propertyEle.getAttribute("name");
 				String value = propertyEle.getAttribute("value");
-				if (value != null && value.length() > 0) {
+				String type = propertyEle.getAttribute("type");
+				if(value != null && value.length() > 0 && type!=null && !"".equals(type.trim())){
+				
+					try {
+						Class targetType = Class.forName(type); // 尝试获取目标属性
+						beanDefinition.getPropertyValues().addPropertyValue(new PropertyValue(name, value,targetType));
+					} catch (ClassNotFoundException e) {
+						
+						throw new RuntimeException("property type is not found");
+					}
+					
+				}
+				else if (value != null && value.length() > 0) {
 					beanDefinition.getPropertyValues().addPropertyValue(new PropertyValue(name, value));
 				} else {
 					String ref = propertyEle.getAttribute("ref");

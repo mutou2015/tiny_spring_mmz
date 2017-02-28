@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.mmz.spring.beans.factory.BeanFactory;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
-import com.mmz.spring.beans.factory.config.ResourceLoader;
+import com.mmz.spring.beans.resource.ResourceLoader;
 
 
 

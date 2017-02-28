@@ -1,7 +1,7 @@
 package com.mmz.spring.beans.reader;
 
 import com.mmz.spring.beans.factory.config.BeanDefinition;
-import com.mmz.spring.beans.factory.config.Resource;
+import com.mmz.spring.beans.resource.Resource;
 
 
 /**

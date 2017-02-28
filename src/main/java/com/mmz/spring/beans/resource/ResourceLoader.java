@@ -1,4 +1,4 @@
-package com.mmz.spring.beans.factory.config;
+package com.mmz.spring.beans.resource;
 
 import java.net.URL;
 

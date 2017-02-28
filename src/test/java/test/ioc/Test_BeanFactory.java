@@ -8,11 +8,11 @@ import test.entity.Person;
 
 import com.mmz.spring.beans.factory.AutowireCapableBeanFactory;
 import com.mmz.spring.beans.factory.BeanFactory;
-import com.mmz.spring.beans.factory.config.Resource;
-import com.mmz.spring.beans.factory.config.ResourceLoader;
-import com.mmz.spring.beans.factory.config.UrlResource;
 import com.mmz.spring.beans.reader.BeanDefinitionReader;
 import com.mmz.spring.beans.reader.XmlBeanDefinitionReader;
+import com.mmz.spring.beans.resource.Resource;
+import com.mmz.spring.beans.resource.ResourceLoader;
+import com.mmz.spring.beans.resource.UrlResource;
 
 public class Test_BeanFactory {
 

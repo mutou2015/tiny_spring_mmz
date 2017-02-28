@@ -33,6 +33,10 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 			}
 			// 
 			try {
+				Class targetType = propertyValue.getTragetType();
+				if(targetType==null)
+					targetType=getConvert().findPorpertyType(propertyValue.getName(), bean);
+				
 				// 获取各属性的set方法
 				// 调用getDeclaredMethods方法输出的是自身的public、protected、private方法
 				// 调用getMethods方法输出的是自身的public方法和父类Object的public方法。

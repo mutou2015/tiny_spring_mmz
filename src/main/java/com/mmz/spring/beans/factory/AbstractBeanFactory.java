@@ -8,8 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 
+
+
 import com.mmz.spring.beans.BeanPostProcessor;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
+import com.mmz.spring.beans.factory.config.Convert;
+import com.mmz.spring.beans.factory.config.DefaultConvert;
 
 public abstract class AbstractBeanFactory implements BeanFactory{
 	
@@ -20,7 +24,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	private List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
 
-	
+	private Convert convert;
 	/**
 	 * Beanfactroy的核心方法，根据名字获取bean
 	 * */
@@ -100,6 +104,11 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	
 	public void setBeanDefinitionMap(Map<String, BeanDefinition> beanDefinitionMap) {
 		this.beanDefinitionMap = beanDefinitionMap;
+	}
+
+
+	public Convert getConvert() {
+		return  new DefaultConvert();
 	}
 	
 	

@@ -1,4 +1,4 @@
-package com.mmz.spring.beans.factory.config;
+package com.mmz.spring.beans.resource;
 
 import java.io.IOException;
 import java.io.InputStream;
