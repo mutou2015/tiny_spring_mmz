@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 import com.mmz.spring.beans.BeanPostProcessor;
+import com.mmz.spring.beans.PropertyEditorRegistrySupport;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.Convert;
 import com.mmz.spring.beans.factory.config.DefaultConvert;
@@ -108,7 +109,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 
 	public Convert getConvert() {
-		return  new DefaultConvert();
+		return  new DefaultConvert(new PropertyEditorRegistrySupport(), beanDefinitionMap);
 	}
 	
 	
