@@ -15,10 +15,11 @@ import com.mmz.spring.beans.PropertyEditorRegistrySupport;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.Convert;
 import com.mmz.spring.beans.factory.config.DefaultConvert;
+import com.mmz.spring.exception.NoSuchBeanDefinitionException;
 
 public abstract class AbstractBeanFactory implements BeanFactory{
 	
-	// 这个beanDefinitionMap可以理解为ioc容器，其中包含的是bean的定义信息，包括Bean,Class,还有PropertyValues属性
+	// 这个beanDefinitionMap可以理解为ioc容器中的内容，其中包含的是bean的定义信息，包括Bean,Class,还有PropertyValues属性
 	private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
 
 	private final List<String> beanDefinitionNames = new ArrayList<String>();
@@ -65,9 +66,24 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	}
 	
-	public void registerBeanDefinition(String name, BeanDefinition beanDefinition) throws Exception {
+	public void registerBeanDefinition(String name, BeanDefinition beanDefinition) {
 		beanDefinitionMap.put(name, beanDefinition);
 		beanDefinitionNames.add(name);
+	}
+	
+	
+	public void removeBeanDefinition(String beanName) {
+		if(beanDefinitionMap.remove(beanName)==null){
+			throw new NoSuchBeanDefinitionException("no "+beanName+"  beanDefinition");
+		}
+				
+	}
+	
+	public BeanDefinition getBeanDefinition(String beanName) {
+		if(beanDefinitionMap.get(beanName)==null)
+			throw new NoSuchBeanDefinitionException("no "+beanName+"  beanDefinition");
+		return beanDefinitionMap.get(beanName);
+				
 	}
 	
 	protected Object initializeBean(Object bean, String name) throws Exception {

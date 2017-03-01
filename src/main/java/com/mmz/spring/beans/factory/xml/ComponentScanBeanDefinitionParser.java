@@ -2,6 +2,10 @@ package com.mmz.spring.beans.factory.xml;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,11 +17,15 @@ import javax.management.RuntimeErrorException;
 
 import org.w3c.dom.Element;
 
+import com.mmz.spring.beans.annotation.Autowired;
 import com.mmz.spring.beans.annotation.Component;
+import com.mmz.spring.beans.factory.BeanDefinitionRegistry;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
+import com.mmz.spring.beans.factory.config.DefaultBeanDefinition;
 import com.mmz.spring.beans.resource.Resource;
 import com.mmz.spring.beans.resource.ResourceLoader;
 import com.mmz.spring.beans.resource.UrlResource;
+import com.mmz.spring.exception.NoSuchBeanDefinitionException;
 import com.mmz.spring.utils.StringUtils;
 
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
@@ -46,7 +54,11 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	
 	private static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
 	
+	private BeanDefinitionRegistry registry;
 	
+	public ComponentScanBeanDefinitionParser(BeanDefinitionRegistry registry){
+		this.registry = registry;
+	}
 	
 	public BeanDefinition parse(Element element) {
 		String[] basePackages = StringUtils.tokenizeToStringArray(
@@ -91,6 +103,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
             Set<Class<?>> classes = getResources(basePackage,packageSearchPath);
             for(Class clz:classes){
             	clz.getAnnotation(Component.class);
+            	
             }
         
         return candidates;
@@ -148,7 +161,74 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
             }   
         }   
     }  
+    
+    protected void annotationParser(BeanDefinition beanDefinition,Class clz){
+    	Annotation[] typeAnnotations = clz.getAnnotations();
+    	for(Annotation typeAnt:typeAnnotations){
+    		if(typeAnt.annotationType()==Component.class){
+    			try {
+					
+					componentParser(beanDefinition,clz,clz.newInstance());
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchBeanDefinitionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    			
+    		}
+    			
+    	}
+    	
+    	
+    }
 	
+    protected void componentParser(BeanDefinition beanDefinition,Class clz,Object bean) throws IllegalArgumentException, IllegalAccessException, NoSuchBeanDefinitionException, Exception {
+    	Field[] fileds = clz.getDeclaredFields();
+    	beanDefinition.setBeanClass(clz);
+    	beanDefinition.setBeanClassName(clz.getName());
+    	
+    	for(Field field:fileds){
+    		Annotation[] fieldAnnotations = field.getAnnotations();
+    		for(Annotation fieldAnt:fieldAnnotations){
+    			if(fieldAnt.annotationType()==Autowired.class){
+    				if(this.registry.getBeanDefinition(field.getName())==null){
+    					componentParser(new DefaultBeanDefinition(),field.getType(),field.getType().newInstance());
+    				}
+    				try {
+    					
+    					Method declaredMethod = bean.getClass().getDeclaredMethod(
+    							"set" + field.getName().substring(0, 1).toUpperCase()
+    									+ field.getName().substring(1), field.getClass());
+    					
+    					declaredMethod.setAccessible(true);
+    					// 调用set方法为bean注入属性值
+    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(field.getName()).getBean());
+    				} catch (NoSuchMethodException e) {
+    					Field declaredField = bean.getClass().getDeclaredField(field.getName());
+    					declaredField.getType();
+    					declaredField.setAccessible(true);
+    					declaredField.set(bean, this.registry.getBeanDefinition(field.getName()).getBean());
+    		    	
+    				} 
+    				
+    				
+    			}
+    		}
+    	}
+    	this.registry.registerBeanDefinition(clz.getName(), beanDefinition);
+    }
+    	
 	
 
 }

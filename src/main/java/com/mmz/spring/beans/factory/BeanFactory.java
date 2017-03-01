@@ -8,7 +8,7 @@ import com.mmz.spring.beans.factory.config.BeanDefinition;
 
 
 
-public interface BeanFactory {
+public interface BeanFactory extends BeanDefinitionRegistry{
 	
 	Object getBean(String name) throws Exception;
 	
