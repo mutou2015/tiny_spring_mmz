@@ -124,5 +124,9 @@ public class PropertyEditorRegistrySupport {
 //			this.defaultEditors.put(long[].class, sae);
 //		}
 	}
+	
+	public void registerDefaultEditors() {
+		this.defaultEditorsActive = true;
+	}
 
 }

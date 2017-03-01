@@ -2,5 +2,16 @@
 	<bean id="person" class="test.entity.Person">
 		<property name="name" value="Mark"></property>
 		<property name="age" value="23"></property>
+		<property name="job" ref="job"></property>
+	</bean>
+	
+	<bean id="inc" class="test.entity.Inc">
+		<property name="incName" value="Apple"></property>
+	</bean>
+	
+	<bean id="job" class="test.entity.Job">
+		<property name="salary" value="600000"></property>
+		<property name="position" value="senior engineer"></property>
+		<property name="inc" ref="inc"></property>
 	</bean>
 </beans>

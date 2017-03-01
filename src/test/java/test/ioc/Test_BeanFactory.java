@@ -25,7 +25,7 @@ public class Test_BeanFactory {
 		try {
 			beanDefinitionReader.loadBeanDefinitions(rs);
 			Person person = (Person) beanFactory.getBean("person");
-			System.out.println(person.getName());
+			System.out.println(person.getName()+"--"+person.getAge()+"--"+person.getJob().getPosition());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

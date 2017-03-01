@@ -4,6 +4,16 @@ public class Person {
 	
 	private String name;
 	private Integer age;
+	private Job job;
+	
+	
+	
+	public Job getJob() {
+		return job;
+	}
+	public void setJob(Job job) {
+		this.job = job;
+	}
 	public String getName() {
 		return name;
 	}

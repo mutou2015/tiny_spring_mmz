@@ -25,7 +25,9 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	private List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
 
-	private Convert convert;
+	private DefaultConvert convert;
+	
+	
 	/**
 	 * Beanfactroy的核心方法，根据名字获取bean
 	 * */
@@ -107,10 +109,21 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 		this.beanDefinitionMap = beanDefinitionMap;
 	}
 
-
-	public Convert getConvert() {
-		return  new DefaultConvert(new PropertyEditorRegistrySupport(), beanDefinitionMap);
+	
+	
+	public void setConvert(DefaultConvert convert) {
+		this.convert = convert;
 	}
+
+
+	public DefaultConvert getConvert() {
+		return  this.convert;//new DefaultConvert(new PropertyEditorRegistrySupport(), beanDefinitionMap);
+	}
+
+
+	
+	
+	
 	
 	
 
