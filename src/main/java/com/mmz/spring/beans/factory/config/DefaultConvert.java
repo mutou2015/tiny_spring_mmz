@@ -1,10 +1,26 @@
 package com.mmz.spring.beans.factory.config;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.NumberFormat;
+
+import com.mmz.spring.beans.PropertyEditorRegistrySupport;
+
+
 
 public class DefaultConvert implements Convert {
 
+	private final PropertyEditorRegistrySupport propertyEditorRegistry;
+	
+	private final Object targetObject;
+	
+	
+	public DefaultConvert(PropertyEditorRegistrySupport propertyEditorRegistry, Object targetObject) {
+		this.propertyEditorRegistry = propertyEditorRegistry;
+		this.targetObject = targetObject;
+	}
+	
 	public Class findPorpertyType(String propertyName, Object bean) {
 		// 根据属性名获取类型
 		try {
@@ -28,6 +44,26 @@ public class DefaultConvert implements Convert {
 		
 		return null;
 	}
+	
+	/**
+	 * Find a default editor for the given type.
+	 * @param requiredType the type to find an editor for
+	 * @return the corresponding editor, or {@code null} if none
+	 */
+	private PropertyEditor findDefaultEditor(Class<?> requiredType) {
+		PropertyEditor editor = null;
+		if (requiredType != null) {
+			// No custom editor -> check BeanWrapperImpl's default editors.
+			editor = this.propertyEditorRegistry.getDefaultEditor(requiredType);
+			if (editor == null && !String.class.equals(requiredType)) {
+				// No BeanWrapper default editor -> check standard JavaBean editor.
+				//editor = BeanUtils.findEditorByConvention(requiredType);
+			}
+		}
+		return editor;
+	}
+
+
 
 	
 
