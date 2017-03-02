@@ -3,25 +3,23 @@ package com.mmz.spring.beans.reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.mmz.spring.beans.factory.BeanDefinitionRegistry;
 import com.mmz.spring.beans.factory.BeanFactory;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
+import com.mmz.spring.beans.factory.xml.BeanDefinitionParser;
 import com.mmz.spring.beans.resource.ResourceLoader;
 
 
 
 public abstract class AbstractBeanDefinitionReader implements BeanDefinitionReader {
-
-	// 这个是ioc容器，也就是name-bean定义map
-	private Map<String,BeanDefinition> registry;
 	
-	private BeanFactory beanFactory;
+	private BeanDefinitionRegistry beanFactory;
 	
     private ResourceLoader resourceLoader;
 
-    private 
+    private BeanDefinitionParser bdParser;
     
     protected AbstractBeanDefinitionReader(BeanFactory beanFactory) {
-        this.registry = new HashMap<String, BeanDefinition>();
         this.beanFactory = beanFactory;
     }
     
@@ -29,19 +27,27 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
      * 获取注册的bean信息(获取ioc容器)
      * */
     public Map<String, BeanDefinition> getRegistry() {
-        return registry;
+        return this.beanFactory.getBeanDefinitionMap();
     }
 
     public ResourceLoader getResourceLoader() {
         return resourceLoader;
     }
 
-	public BeanFactory getBeanFactory() {
+	public BeanDefinitionRegistry getBeanFactory() {
 		return beanFactory;
 	}
 
-	public void setBeanFactory(BeanFactory beanFactory) {
+	public void setBeanFactory(BeanDefinitionRegistry beanFactory) {
 		this.beanFactory = beanFactory;
+	}
+
+	public BeanDefinitionParser getBdParser() {
+		return bdParser;
+	}
+
+	public void setBdParser(BeanDefinitionParser bdParser) {
+		this.bdParser = bdParser;
 	}
     
     

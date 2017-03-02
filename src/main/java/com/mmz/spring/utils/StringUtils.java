@@ -132,4 +132,17 @@ public class StringUtils {
 		}
 		return collection.toArray(new String[collection.size()]);
 	}
+	
+	/**
+	 * 获得短类名
+	 * */
+	public static String getShortClassName(String oldname){
+		if(oldname.indexOf(".")>0){
+			String[] arr = oldname.split("\\.");
+			return arr[arr.length-1].substring(0, 1).toLowerCase()+arr[arr.length-1].substring(1);
+		}
+		else{
+			return oldname.substring(0, 1).toLowerCase()+oldname.substring(1);
+		}
+	}
 }

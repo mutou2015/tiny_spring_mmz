@@ -7,6 +7,6 @@ import com.mmz.spring.beans.factory.config.BeanDefinition;
 
 public interface BeanDefinitionParser {
 	
-	BeanDefinition parse(Element element);
+	void parse(Element element);
 
 }

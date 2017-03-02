@@ -6,9 +6,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -60,53 +64,44 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		this.registry = registry;
 	}
 	
-	public BeanDefinition parse(Element element) {
+	public void parse(Element element) {
 		String[] basePackages = StringUtils.tokenizeToStringArray(
                 element.getAttribute(BASE_PACKAGE_ATTRIBUTE),
                 ",; \t\n");
 
 		
-
-		return null;
+		doScan(basePackages);
+		
 	}
 	
 	protected void doScan(String... basePackages) {
      
         for (String basePackage : basePackages) {
             //这里是重点,找到候选组件
-            Set<BeanDefinition> candidates = null;
-			try {
-				candidates = findCandidateComponents(basePackage);
+            try {
+				findCandidateComponents(basePackage);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-            for (BeanDefinition candidate : candidates) {
-                
-//                if (checkCandidate(beanName, candidate)) {
-//                    BeanDefinitionHolder definitionHolder = 
-//                                            new BeanDefinitionHolder(candidate, beanName);
-//                    beanDefinitions.add(definitionHolder);
-//                    //注册到工厂中
-//                    registerBeanDefinition(definitionHolder, this.registry);
-//                }
-            }                        
         }
+ 
       
     }
 	
-	public Set<BeanDefinition> findCandidateComponents(String basePackage) throws IOException {
+	public Map<String, BeanDefinition> findCandidateComponents(String basePackage) throws IOException {
         Set<BeanDefinition> candidates = new LinkedHashSet<BeanDefinition>();
        
-            String packageSearchPath = Thread.currentThread().getContextClassLoader().getResource("") +
-                    resolveBasePackage(basePackage) + "/";
-            Set<Class<?>> classes = getResources(basePackage,packageSearchPath);
+        Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(basePackage);
+		URL url = dirs.nextElement();
+		String packageSearchPath = URLDecoder.decode(url.getFile(), "UTF-8");
+            Set<Class<?>> classes = getResources(packageSearchPath,basePackage);
             for(Class clz:classes){
-            	clz.getAnnotation(Component.class);
+            	annotationParser(clz);
             	
             }
         
-        return candidates;
+        return this.registry.getBeanDefinitionMap();
     }
 
 	private String resolveBasePackage(String basePackage) {
@@ -162,13 +157,13 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
         }   
     }  
     
-    protected void annotationParser(BeanDefinition beanDefinition,Class clz){
+    protected void annotationParser(Class clz){
     	Annotation[] typeAnnotations = clz.getAnnotations();
     	for(Annotation typeAnt:typeAnnotations){
     		if(typeAnt.annotationType()==Component.class){
     			try {
 					
-					componentParser(beanDefinition,clz,clz.newInstance());
+					componentParser(clz,clz.newInstance());
 				} catch (InstantiationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -193,7 +188,8 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
     	
     }
 	
-    protected void componentParser(BeanDefinition beanDefinition,Class clz,Object bean) throws IllegalArgumentException, IllegalAccessException, NoSuchBeanDefinitionException, Exception {
+    protected void componentParser(Class clz,Object bean) throws IllegalArgumentException, IllegalAccessException, NoSuchBeanDefinitionException, Exception {
+    	BeanDefinition beanDefinition = new DefaultBeanDefinition();
     	Field[] fileds = clz.getDeclaredFields();
     	beanDefinition.setBeanClass(clz);
     	beanDefinition.setBeanClassName(clz.getName());
@@ -202,23 +198,24 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
     		Annotation[] fieldAnnotations = field.getAnnotations();
     		for(Annotation fieldAnt:fieldAnnotations){
     			if(fieldAnt.annotationType()==Autowired.class){
-    				if(this.registry.getBeanDefinition(field.getName())==null){
-    					componentParser(new DefaultBeanDefinition(),field.getType(),field.getType().newInstance());
+    				String tempname=StringUtils.getShortClassName(field.getName());
+    				if(this.registry.getBeanDefinition(tempname)==null&&this.registry.getBdDefinitionByType(field.getType())==null){
+    					componentParser(field.getType(),field.getType().newInstance());
     				}
     				try {
     					
     					Method declaredMethod = bean.getClass().getDeclaredMethod(
-    							"set" + field.getName().substring(0, 1).toUpperCase()
-    									+ field.getName().substring(1), field.getClass());
+    							"set" + tempname.substring(0, 1).toUpperCase()
+    									+ tempname.substring(1), field.getType());
     					
     					declaredMethod.setAccessible(true);
     					// 调用set方法为bean注入属性值
-    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(field.getName()).getBean());
+    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(tempname).getBean()!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
     				} catch (NoSuchMethodException e) {
     					Field declaredField = bean.getClass().getDeclaredField(field.getName());
     					declaredField.getType();
     					declaredField.setAccessible(true);
-    					declaredField.set(bean, this.registry.getBeanDefinition(field.getName()).getBean());
+    					declaredField.set(bean, this.registry.getBeanDefinition(tempname).getBean()!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
     		    	
     				} 
     				
@@ -226,7 +223,8 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
     			}
     		}
     	}
-    	this.registry.registerBeanDefinition(clz.getName(), beanDefinition);
+    	beanDefinition.setBean(bean);
+    	this.registry.registerBeanDefinition(StringUtils.getShortClassName(clz.getName()), beanDefinition);
     }
     	
 	

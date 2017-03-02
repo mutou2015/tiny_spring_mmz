@@ -1,6 +1,9 @@
 package com.mmz.spring.beans.reader;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,6 +18,7 @@ import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.BeanReference;
 import com.mmz.spring.beans.factory.config.DefaultBeanDefinition;
 import com.mmz.spring.beans.factory.config.PropertyValue;
+import com.mmz.spring.beans.factory.xml.ComponentScanBeanDefinitionParser;
 import com.mmz.spring.beans.resource.Resource;
 import com.mmz.spring.beans.resource.ResourceLoader;
 
@@ -22,6 +26,10 @@ import com.mmz.spring.beans.resource.ResourceLoader;
 
 public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 
+	private ArrayList<Element> beanList = new ArrayList<Element>();
+	
+	private ArrayList<Element> componentList = new ArrayList<Element>();
+	
 	public XmlBeanDefinitionReader(BeanFactory beanFactory) {
 		super(beanFactory);
 		// TODO Auto-generated constructor stub
@@ -33,6 +41,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 	public void loadBeanDefinitions(Resource resource) throws Exception {
 		InputStream inputStream = resource.getInputStream();
 		doLoadBeanDefinitions(inputStream);
+		
 		
 	}
 	
@@ -67,31 +76,75 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 			Node node = nl.item(i);
 			if (node instanceof Element) {
 				Element ele = (Element) node;
-				ele.getNodeName();
+				nodeNameParser(ele);
 				
 			}
 		}
+		setIoc();
+		
 	}
-	
+	// 对元素进行分类
 	protected void nodeNameParser(Element ele){
 		String nodeName = ele.getNodeName();
 		if("bean".equals(nodeName))
-			processBeanDefinition(ele);
-		else if("context".equals(nodeName))
-			
+			beanList.add(ele);
+		else if("context:component-scan".equals(nodeName)){
+			componentList.add(ele);
+		}
 	}
+	// xml和注解两种方式加载BeanDefinition
+	protected void setIoc(){
+		try {
+			xmlBdDefinition(beanList);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.setBdParser(new ComponentScanBeanDefinitionParser(getBeanFactory()));
+		for(Element ele:componentList){
+			this.getBdParser().parse(ele); 
+		}
+	}
+	
+	protected void xmlBdDefinition(ArrayList<Element> beanList) throws Exception{
+		for(Element ele:beanList){
+			try {
+				processBeanDefinition(ele);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for(Entry<String,BeanDefinition> entry:getRegistry().entrySet()){
+			createInstanceByLazy(entry.getValue());
+		}
+	}
+	
 	/**
 	 * 获取元素的id和class属性
+	 * @throws Exception 
 	 * */
-	protected void processBeanDefinition(Element ele) {
-		String name = ele.getAttribute("id");
-		String className = ele.getAttribute("class");
-		// 从这里开始往beanDefinition写入bean定义信息，可以看出来此处并没有进行newInstance()的操作，而是留到getBean()的时候
+	protected void processBeanDefinition(Element ele) throws Exception {
+		
+		// 从这里开始往beanDefinition写入bean定义信息
 		BeanDefinition beanDefinition = new DefaultBeanDefinition();
 		processProperty(ele, beanDefinition);
+		String name = ele.getAttribute("id");
+		String className = ele.getAttribute("class");
 		beanDefinition.setBeanClassName(className);
+		Boolean lazy_init = (ele.getAttribute("lazy_init")==null?"true":ele.getAttribute("lazy_init")).equals("true")?true:false;
+		beanDefinition.setLazy_init(lazy_init);
 		getRegistry().put(name, beanDefinition);
+		
 	}
+	
+	protected void createInstanceByLazy(BeanDefinition beanDefinition) throws Exception{
+		// 获取懒加载属性
+		if(!beanDefinition.getLazy_init())
+			getBeanFactory().doCreateBean(beanDefinition);
+	} 
+	
 	/**
 	 * 获取bean的property标签NodeList：propertyNode
 	 * @throws ClassNotFoundException 

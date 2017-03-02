@@ -3,6 +3,7 @@ package com.mmz.spring.beans.factory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -17,6 +18,7 @@ import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.Convert;
 import com.mmz.spring.beans.factory.config.DefaultConvert;
 import com.mmz.spring.beans.factory.xml.BeanDefinitionParser;
+import com.mmz.spring.beans.factory.xml.ComponentScanBeanDefinitionParser;
 import com.mmz.spring.exception.NoSuchBeanDefinitionException;
 
 public abstract class AbstractBeanFactory implements BeanFactory{
@@ -30,7 +32,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	private DefaultConvert convert;
 	
-	private BeanDefinitionParser bdParser = ;
+	
 	/**
 	 * Beanfactroy的核心方法，根据名字获取bean
 	 * */
@@ -56,7 +58,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	
 	// 这里提供了doCreateBean的算法架构，但是applyPropertyValues()交给子类去实现，这是模板设计模式
 	// spring中大量使用这种设计模式，为了提供不同的实现方式
-	protected Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
+	public Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
 		Object bean=createBeanInstance(beanDefinition);
 		beanDefinition.setBean(bean);
 		// 由子类AutowireCapableBeanFactory实现
@@ -84,8 +86,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	}
 	
 	public BeanDefinition getBeanDefinition(String beanName) {
-		if(beanDefinitionMap.get(beanName)==null)
-			throw new NoSuchBeanDefinitionException("no "+beanName+"  beanDefinition");
+		
 		return beanDefinitionMap.get(beanName);
 				
 	}
@@ -129,7 +130,25 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 		this.beanDefinitionMap = beanDefinitionMap;
 	}
 
-	
+	/**
+	 * 根据class类型从map中获取对应的beandefinition
+	 * */
+	public BeanDefinition getBdDefinitionByType(Class clz){
+		
+		 for (Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()) {
+			 try {
+				if(entry.getValue().getBeanClass().equals(clz))
+					 return entry.getValue();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			  
+		 }
+		return null;
+		
+	}
 	
 	public void setConvert(DefaultConvert convert) {
 		this.convert = convert;
@@ -141,6 +160,11 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	}
 
 
+	public Map<String, BeanDefinition> getBeanDefinitionMap() {
+		return beanDefinitionMap;
+	}
+
+	
 	
 	
 	

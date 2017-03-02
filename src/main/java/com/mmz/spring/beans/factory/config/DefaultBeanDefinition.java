@@ -10,6 +10,8 @@ public class DefaultBeanDefinition implements BeanDefinition {
 	
 	private String beanClassName;
 	
+	Boolean lazy_init = false;
+	
 	private PropertyValues propertyValues = new PropertyValues();
 
 	public Object getBean() {
@@ -47,6 +49,14 @@ public class DefaultBeanDefinition implements BeanDefinition {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public Boolean getLazy_init() {
+		return lazy_init;
+	}
+
+	public void setLazy_init(Boolean lazy_init) {
+		this.lazy_init = lazy_init;
 	}
 	
 	

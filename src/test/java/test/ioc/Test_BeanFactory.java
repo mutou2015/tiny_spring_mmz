@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import test.entity.Fruit;
 import test.entity.Person;
 
 import com.mmz.spring.beans.factory.AutowireCapableBeanFactory;
@@ -26,6 +27,9 @@ public class Test_BeanFactory {
 			beanDefinitionReader.loadBeanDefinitions(rs);
 			Person person = (Person) beanFactory.getBean("person");
 			System.out.println(person.getName()+"--"+person.getAge()+"--"+person.getJob().getPosition());
+			
+			Fruit fruit = (Fruit) beanFactory.getBean("fruit");
+			System.out.println(fruit.getPerson().getName());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
