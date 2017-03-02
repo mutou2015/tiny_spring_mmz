@@ -10,11 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 
+
 import com.mmz.spring.beans.BeanPostProcessor;
 import com.mmz.spring.beans.PropertyEditorRegistrySupport;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.Convert;
 import com.mmz.spring.beans.factory.config.DefaultConvert;
+import com.mmz.spring.beans.factory.xml.BeanDefinitionParser;
 import com.mmz.spring.exception.NoSuchBeanDefinitionException;
 
 public abstract class AbstractBeanFactory implements BeanFactory{
@@ -28,7 +30,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	private DefaultConvert convert;
 	
-	
+	private BeanDefinitionParser bdParser = ;
 	/**
 	 * Beanfactroy的核心方法，根据名字获取bean
 	 * */
@@ -61,6 +63,8 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 		applyPropertyValues(bean, beanDefinition);
 		return bean;
 	}
+	
+	
 	
 	protected void applyPropertyValues(Object bean, BeanDefinition beanDefinition) throws Exception {
 

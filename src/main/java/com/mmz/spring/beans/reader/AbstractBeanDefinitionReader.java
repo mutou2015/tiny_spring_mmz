@@ -18,6 +18,8 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 	
     private ResourceLoader resourceLoader;
 
+    private 
+    
     protected AbstractBeanDefinitionReader(BeanFactory beanFactory) {
         this.registry = new HashMap<String, BeanDefinition>();
         this.beanFactory = beanFactory;

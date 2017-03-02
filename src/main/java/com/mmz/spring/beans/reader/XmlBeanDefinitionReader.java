@@ -67,9 +67,18 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 			Node node = nl.item(i);
 			if (node instanceof Element) {
 				Element ele = (Element) node;
-				processBeanDefinition(ele);
+				ele.getNodeName();
+				
 			}
 		}
+	}
+	
+	protected void nodeNameParser(Element ele){
+		String nodeName = ele.getNodeName();
+		if("bean".equals(nodeName))
+			processBeanDefinition(ele);
+		else if("context".equals(nodeName))
+			
 	}
 	/**
 	 * 获取元素的id和class属性

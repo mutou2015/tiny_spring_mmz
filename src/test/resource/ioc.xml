@@ -14,4 +14,6 @@
 		<property name="position" value="senior engineer"></property>
 		<property name="inc" ref="inc"></property>
 	</bean>
+	
+	<context:component-scan base-package="test" />
 </beans>

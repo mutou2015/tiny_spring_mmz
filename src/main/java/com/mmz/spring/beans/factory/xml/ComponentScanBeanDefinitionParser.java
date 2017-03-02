@@ -98,8 +98,8 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) throws IOException {
         Set<BeanDefinition> candidates = new LinkedHashSet<BeanDefinition>();
        
-            String packageSearchPath = ResourceLoader.CLASSPATH_ALL_URL_PREFIX +
-                    resolveBasePackage(basePackage) + "/" + this.DEFAULT_RESOURCE_PATTERN;
+            String packageSearchPath = Thread.currentThread().getContextClassLoader().getResource("") +
+                    resolveBasePackage(basePackage) + "/";
             Set<Class<?>> classes = getResources(basePackage,packageSearchPath);
             for(Class clz:classes){
             	clz.getAnnotation(Component.class);
