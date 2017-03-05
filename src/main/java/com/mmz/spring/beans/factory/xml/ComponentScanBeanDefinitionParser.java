@@ -210,12 +210,12 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
     					
     					declaredMethod.setAccessible(true);
     					// 调用set方法为bean注入属性值
-    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(tempname).getBean()!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
+    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(tempname)!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
     				} catch (NoSuchMethodException e) {
     					Field declaredField = bean.getClass().getDeclaredField(field.getName());
     					declaredField.getType();
     					declaredField.setAccessible(true);
-    					declaredField.set(bean, this.registry.getBeanDefinition(tempname).getBean()!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
+    					declaredField.set(bean, this.registry.getBeanDefinition(tempname)!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
     		    	
     				} 
     				

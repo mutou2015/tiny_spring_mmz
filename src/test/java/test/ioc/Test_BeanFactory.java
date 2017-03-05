@@ -18,18 +18,39 @@ import com.mmz.spring.beans.resource.UrlResource;
 public class Test_BeanFactory {
 
 	@Test
-	public void test_ioc() {
+	public void test_xml_ioc() {
+		ResourceLoader rl= new ResourceLoader();
+		Resource rs=rl.getResource("ioc.xml");
+		BeanFactory beanFactory = new AutowireCapableBeanFactory();
+		BeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
+		try {
+			beanDefinitionReader.loadBeanDefinitions(rs);
+			Person person = (Person) beanFactory.getBean("person");
+			System.out.println(person.getName()+"--"+person.getAge()+"--");
+			
+			Fruit fruit = (Fruit) beanFactory.getBean("fruit");
+			System.out.println(fruit.getPerson().getName());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	@Test
+	public void test_annotation_ioc() {
 		ResourceLoader rl= new ResourceLoader();
 		Resource rs=rl.getResource("ioc.xml");
 		AutowireCapableBeanFactory beanFactory = new AutowireCapableBeanFactory();
 		BeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 		try {
 			beanDefinitionReader.loadBeanDefinitions(rs);
-			Person person = (Person) beanFactory.getBean("person");
-			System.out.println(person.getName()+"--"+person.getAge()+"--"+person.getJob().getPosition());
 			
 			Fruit fruit = (Fruit) beanFactory.getBean("fruit");
-			System.out.println(fruit.getPerson().getName());
+			fruit.getPerson().setName("Mark");
+			fruit.getQuality().setPrice(35);
+			System.out.println(fruit.getPerson().getName()+"--"+fruit.getQuality().getPrice());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

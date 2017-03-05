@@ -16,6 +16,8 @@ public interface BeanFactory extends BeanDefinitionRegistry{
 	
 	 void setBeanDefinitionMap(Map<String, BeanDefinition> beanDefinitionMap);
 	 
+	 BeanDefinition getBeanDefinition(String beanName);
+	 
 	
 
 }

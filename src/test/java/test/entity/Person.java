@@ -1,9 +1,15 @@
 package test.entity;
 
+import com.mmz.spring.beans.annotation.Autowired;
+import com.mmz.spring.beans.annotation.Component;
+
+@Component
 public class Person {
 	
 	private String name;
 	private Integer age;
+	
+	@Autowired
 	private Job job;
 	
 	

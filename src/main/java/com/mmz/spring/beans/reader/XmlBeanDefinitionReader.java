@@ -133,7 +133,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		String name = ele.getAttribute("id");
 		String className = ele.getAttribute("class");
 		beanDefinition.setBeanClassName(className);
-		Boolean lazy_init = (ele.getAttribute("lazy_init")==null?"true":ele.getAttribute("lazy_init")).equals("true")?true:false;
+		Boolean lazy_init = (ele.getAttribute("lazy-init")==null?"true":ele.getAttribute("lazy-init")).equals("true")?true:false;
 		beanDefinition.setLazy_init(lazy_init);
 		getRegistry().put(name, beanDefinition);
 		
@@ -147,7 +147,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 	
 	/**
 	 * 获取bean的property标签NodeList：propertyNode
-	 * @throws ClassNotFoundException 
+	 * 
 	 * */
 	private void processProperty(Element ele, BeanDefinition beanDefinition)  {
 		NodeList propertyNode = ele.getElementsByTagName("property");
