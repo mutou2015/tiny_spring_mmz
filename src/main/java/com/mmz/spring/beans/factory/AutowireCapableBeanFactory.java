@@ -2,7 +2,10 @@ package com.mmz.spring.beans.factory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import com.mmz.spring.beans.BeanWrapper;
 import com.mmz.spring.beans.PropertyEditorRegistrySupport;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.BeanFactoryAware;
@@ -21,6 +24,10 @@ import com.mmz.spring.beans.factory.config.PropertyValue;
 
 
 public class AutowireCapableBeanFactory extends AbstractBeanFactory {
+	
+	/** Cache of unfinished FactoryBean instances: FactoryBean name --> BeanWrapper 也是跟循环依赖有关*/
+	private final Map<String, BeanWrapper> factoryBeanInstanceCache =
+			new ConcurrentHashMap<String, BeanWrapper>(16);
 	
 	protected void applyPropertyValues(Object bean, BeanDefinition beanDefinition) throws Exception {
 		if (bean instanceof BeanFactoryAware) {
@@ -66,6 +73,28 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 				declaredField.set(bean, value);
 			}
 		}
+	}
+
+	/**
+	 * 检验bean能否被创建，如果该bean配置了postprocessor，那么返回一个proxy
+	 * */
+	@Override
+	protected Object createBean(String beanName, BeanDefinition mbd,final Object[] args) {
+		//resolveBeanClass(mbd, beanName);
+		//mbd.prepareMethodOverrides();
+		Object beanInstance = doCreateBean(beanName,mbd,args);
+		return beanInstance;
+	}
+
+	protected Object doCreateBean(String beanName, BeanDefinition mbd, Object[] args) {
+		BeanWrapper instanceWrapper = null;
+		if(mbd.isSingleTon()){
+			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
+		}
+		if(instanceWrapper == null){
+			instanceWrapper = createBeanInstance(beanName,mbd,args);
+		}
+		return null;
 	}
 
 }

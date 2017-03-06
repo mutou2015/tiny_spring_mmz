@@ -5,6 +5,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import com.mmz.spring.beans.factory.BeanFactory;
+
+
+
 public class StringUtils {
 	
 	public static boolean hasLength(CharSequence str) {
@@ -144,5 +148,16 @@ public class StringUtils {
 		else{
 			return oldname.substring(0, 1).toLowerCase()+oldname.substring(1);
 		}
+	}
+	/**
+	 * 截取factorybean id中的&
+	 * */
+	public static String transformedBeanName(String name) {
+		
+		String beanName = name;
+		while (beanName.startsWith(BeanFactory.FACTORY_BEAN_PREFIX)) {
+			beanName = beanName.substring(BeanFactory.FACTORY_BEAN_PREFIX.length());
+		}
+		return beanName;
 	}
 }
