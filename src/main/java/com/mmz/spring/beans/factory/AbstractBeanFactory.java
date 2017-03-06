@@ -9,9 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 
-
-
-
 import com.mmz.spring.beans.BeanPostProcessor;
 import com.mmz.spring.beans.PropertyEditorRegistrySupport;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
@@ -31,6 +28,10 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	private List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
 
 	private DefaultConvert convert;
+	
+	protected static final Object NULL_OBJECT = new Object();
+	/** Cache of singleton objects: bean name --> bean instance */
+	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<String, Object>(64);
 	
 	
 	/**
@@ -54,8 +55,64 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 			throw new IllegalArgumentException("No bean named " + name + " is defined");
 		
 	}
+	@SuppressWarnings("unchecked")
+	protected <T> Object doGetBean(final String name,final Class<T> requiredType){
+		final BeanDefinition bd = getBeanDefinition(name);
+		Object bean = null;
+		if(bd.isSingleTon()){
+			
+			Object sharedInstance = getSingleTon(name, new ObjectFactory<Object>() {
+
+				public Object getObject() {
+					
+					return createBean(name, bd);
+				}
+				
+			});
+		}
+		if(bd.isPrototype()){
+			Object prototypeInstance = null;
+			prototypeInstance = createBean(name, bd);
+			/**
+			 * Get the object for the given bean instance, 
+			 * either the bean instance itself or its created object in case of a FactoryBean.
+			 * */
+			//bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
+		}
+		// Check if required type matches the type of the actual bean instance.
+//		if (requiredType != null && bean != null && !requiredType.isAssignableFrom(bean.getClass())) {
+//			
+//			//return getTypeConverter().convertIfNecessary(bean, requiredType);
+//			return null;
+//		}
+		return (T)bean;		
+	}
 	
+	protected abstract Object createBean(String beanName, BeanDefinition mbd);
+			
 	
+	private Object getSingleTon(String name,ObjectFactory<?> singletonFactory) {
+		Object singletonObject = this.singletonObjects.get(name);
+		if(singletonObject==null){
+			synchronized(this.singletonObjects){
+				// 这个会被回调
+				singletonObject = singletonFactory.getObject();
+			}
+			addSingleton(name,singletonObject);
+		}
+		return singletonObject != null ? singletonObject : NULL_OBJECT;
+	}
+
+	private void addSingleton(String beanName,Object singletonObject) {
+		synchronized (this.singletonObjects) {
+			this.singletonObjects.put(beanName, (singletonObject != null ? singletonObject : NULL_OBJECT));
+//			this.singletonFactories.remove(beanName);
+//			this.earlySingletonObjects.remove(beanName);
+//			this.registeredSingletons.add(beanName);
+		}
+		
+	}
+
 	// 这里提供了doCreateBean的算法架构，但是applyPropertyValues()交给子类去实现，这是模板设计模式
 	// spring中大量使用这种设计模式，为了提供不同的实现方式
 	public Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
