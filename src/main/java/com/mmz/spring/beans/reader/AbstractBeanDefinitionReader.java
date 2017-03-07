@@ -23,18 +23,13 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
         this.beanFactory = beanFactory;
     }
     
-    /**
-     * 获取注册的bean信息(获取ioc容器)
-     * */
-    public Map<String, BeanDefinition> getRegistry() {
-        return this.beanFactory.getBeanDefinitionMap();
-    }
+  
 
     public ResourceLoader getResourceLoader() {
         return resourceLoader;
     }
 
-	public BeanDefinitionRegistry getBeanFactory() {
+	public BeanDefinitionRegistry getRegistry() {
 		return beanFactory;
 	}
 
@@ -50,6 +45,9 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		this.bdParser = bdParser;
 	}
     
+	Map<String,BeanDefinition>  getBeanDefinitionMap(){
+		return this.beanFactory.getBeanDefinitionMap();
+	};
     
 	
 }

@@ -1,9 +1,9 @@
 <beans>
-	<!-- <bean id="person" class="test.entity.Person">
+	<bean id="person" class="test.entity.Person">
 		<property name="name" value="Mark"></property>
 		<property name="age" value="23"></property>
 		<property name="job" ref="job"></property>
-	</bean> -->
+	</bean>
 	
 	<bean id="inc" class="test.entity.Inc">
 		<property name="incName" value="Apple"></property>

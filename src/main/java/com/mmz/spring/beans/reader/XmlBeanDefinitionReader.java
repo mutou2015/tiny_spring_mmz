@@ -53,7 +53,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		Document doc = docBuilder.parse(inputStream);
 		// 解析bean
 		registerBeanDefinitions(doc);
-		getBeanFactory().setBeanDefinitionMap(getRegistry());
+		getRegistry().setBeanDefinitionMap(getBeanDefinitionMap());
 		inputStream.close();
 	}
 	// 这个方法感觉有点多余
@@ -101,7 +101,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 			e.printStackTrace();
 		}
 		
-		this.setBdParser(new ComponentScanBeanDefinitionParser(getBeanFactory()));
+		this.setBdParser(new ComponentScanBeanDefinitionParser(getRegistry()));
 		for(Element ele:componentList){
 			this.getBdParser().parse(ele); 
 		}
@@ -116,7 +116,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 				e.printStackTrace();
 			}
 		}
-		for(Entry<String,BeanDefinition> entry:getRegistry().entrySet()){
+		for(Entry<String,BeanDefinition> entry:getBeanDefinitionMap().entrySet()){
 			createInstanceByLazy(entry.getValue());
 		}
 	}
@@ -133,16 +133,18 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		String name = ele.getAttribute("id");
 		String className = ele.getAttribute("class");
 		beanDefinition.setBeanClassName(className);
-		Boolean lazy_init = (ele.getAttribute("lazy-init")==null?"true":ele.getAttribute("lazy-init")).equals("true")?true:false;
+		Boolean lazy_init = (ele.getAttribute("lazy-init").equals("")?"true":ele.getAttribute("lazy-init")).equals("true")?true:false;
+		String scope = (ele.getAttribute("scope").equals("")?"singleton":ele.getAttribute("scope"));
+		beanDefinition.setScope(scope);
 		beanDefinition.setLazy_init(lazy_init);
-		getRegistry().put(name, beanDefinition);
+		getBeanDefinitionMap().put(name, beanDefinition);
 		
 	}
 	
 	protected void createInstanceByLazy(BeanDefinition beanDefinition) throws Exception{
 		// 获取懒加载属性
 		if(!beanDefinition.getLazy_init())
-			getBeanFactory().doCreateBean(beanDefinition);
+			getRegistry().doCreateBean(beanDefinition);
 	} 
 	
 	/**

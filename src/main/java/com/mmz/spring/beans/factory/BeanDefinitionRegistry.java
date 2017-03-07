@@ -21,6 +21,6 @@ public interface BeanDefinitionRegistry {
 	 
 	 Map<String, BeanDefinition> getBeanDefinitionMap();
 	 
-	 Object doCreateBean(BeanDefinition beanDefinition) throws Exception;
+	 Object doCreateBean(BeanDefinition mbd) throws Exception;
 
 }

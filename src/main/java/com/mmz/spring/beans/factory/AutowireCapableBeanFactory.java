@@ -1,11 +1,13 @@
 package com.mmz.spring.beans.factory;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.mmz.spring.beans.BeanWrapper;
+import com.mmz.spring.beans.BeanWrapperImpl;
 import com.mmz.spring.beans.PropertyEditorRegistrySupport;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.BeanFactoryAware;
@@ -75,6 +77,8 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 		}
 	}
 
+	
+	
 	/**
 	 * 检验bean能否被创建，如果该bean配置了postprocessor，那么返回一个proxy
 	 * */
@@ -83,18 +87,117 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 		//resolveBeanClass(mbd, beanName);
 		//mbd.prepareMethodOverrides();
 		Object beanInstance = doCreateBean(beanName,mbd,args);
+		mbd.setBean(beanInstance);
 		return beanInstance;
 	}
 
 	protected Object doCreateBean(String beanName, BeanDefinition mbd, Object[] args) {
 		BeanWrapper instanceWrapper = null;
-		if(mbd.isSingleTon()){
+		if(mbd.isSingleTon()&&beanName!=null){
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if(instanceWrapper == null){
-			instanceWrapper = createBeanInstance(beanName,mbd,args);
+			try {
+				instanceWrapper = createBeanInstance(beanName,mbd,args);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		return null;
+		final Object bean = (instanceWrapper != null ? instanceWrapper.getWrappedInstance() : null);
+		Class<?> beanType = (instanceWrapper != null ? instanceWrapper.getWrappedClass() : null);
+		
+		// 由子类AutowireCapableBeanFactory实现
+		try {
+			applyPropertyValues(bean, mbd);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return bean;
 	}
+	
+	public Object doCreateBean(BeanDefinition mbd) throws Exception {
+		
+		return doCreateBean(null,mbd,null);
+	}
+	
+	// 这里提供了doCreateBean的算法架构，但是applyPropertyValues()交给子类去实现，这是模板设计模式
+			// spring中大量使用这种设计模式，为了提供不同的实现方式
+//			public Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
+//				Object bean=createBeanInstance(beanDefinition);
+//				beanDefinition.setBean(bean);
+//				// 由子类AutowireCapableBeanFactory实现
+//				applyPropertyValues(bean, beanDefinition);
+//				return bean;
+//			}
+	
+	/**
+	 * 根据类的Class对象创建类的实例
+	 * @throws Exception 
+	 * */
+	protected BeanWrapper createBeanInstance(String beanName,BeanDefinition mbd,Object[] args) throws Exception{
+		
+//				Class<?> beanClass = resolveBeanClass(mbd, beanName);
+//
+//				if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
+//					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+//							"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
+//				}
+//
+//				if (mbd.getFactoryMethodName() != null)  {
+//					return instantiateUsingFactoryMethod(beanName, mbd, args);
+//				}
+//
+//				
+//				boolean resolved = false;
+//				boolean autowireNecessary = false;
+//				if (args == null) {
+//					synchronized (mbd.constructorArgumentLock) {
+//						if (mbd.resolvedConstructorOrFactoryMethod != null) {
+//							resolved = true;
+//							autowireNecessary = mbd.constructorArgumentsResolved;
+//						}
+//					}
+//				}
+//				if (resolved) {
+//					if (autowireNecessary) {
+//						return autowireConstructor(beanName, mbd, null, null);
+//					}
+//					else {
+//						return instantiateBean(beanName, mbd);
+//					}
+//				}
+//
+//				
+//				Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+//				if (ctors != null ||
+//						mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_CONSTRUCTOR ||
+//						mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args))  {
+//					return autowireConstructor(beanName, mbd, ctors, args);
+//				}
+
+				
+				return instantiateBean(beanName, mbd);
+	}
+	
+	protected BeanWrapper instantiateBean(String beanName, BeanDefinition mbd) throws Exception {
+		Class clazz = mbd.getBeanClass();
+		if(clazz.isInterface())
+			throw new RuntimeException("指定的类是个接口");
+		Constructor constructorToUse = clazz.getDeclaredConstructor((Class[]) null);
+		constructorToUse.setAccessible(true);
+		Object instance = constructorToUse.newInstance(null);
+		
+		return new BeanWrapperImpl(instance);
+	}
+
+
+
+	
+
+
+
 
 }

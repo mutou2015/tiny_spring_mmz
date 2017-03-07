@@ -80,8 +80,8 @@ public class BeanWrapperImpl implements BeanWrapper {
 	}
 	
 	public Object getWrappedInstance() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		return this.object;
 	}
 
 	public Class<?> getWrappedClass() {
