@@ -76,7 +76,7 @@ public class DefaultBeanDefinition implements BeanDefinition {
 
 	public Boolean isPrototype() {
 		
-		return SCOPE_SINGLETON.equals(scope) ;
+		return SCOPE_PROTOTYPE.equals(scope) ;
 	}
 	
 	
