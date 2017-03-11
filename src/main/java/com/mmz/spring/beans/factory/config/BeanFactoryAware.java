@@ -6,5 +6,5 @@ import com.mmz.spring.beans.factory.BeanFactory;
 
 public interface BeanFactoryAware {
 	
-	void setBeanFactory(BeanFactory beanFactory) throws Exception;
+	void setBeanFactory(BeanFactory beanFactory);
 }

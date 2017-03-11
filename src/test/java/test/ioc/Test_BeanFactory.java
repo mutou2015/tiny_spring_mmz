@@ -26,6 +26,8 @@ public class Test_BeanFactory {
 		try {
 			beanDefinitionReader.loadBeanDefinitions(rs);
 			Person person = (Person) beanFactory.getBean("person");
+			Person person2 = (Person) beanFactory.getBean("person");
+			System.out.println(person==person2);
 			System.out.println(person.getName()+"--"+person.getAge()+"--");
 			
 			Fruit fruit = (Fruit) beanFactory.getBean("fruit");

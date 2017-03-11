@@ -12,6 +12,8 @@ public interface BeanFactory extends BeanDefinitionRegistry{
 	
 	String FACTORY_BEAN_PREFIX="&";
 	
+	String SCOPE_SINGLETON = "singleton";
+	
 	Object getBean(String name) throws Exception;
 	
 	<T> T getBean(String name, Class<T> requiredType) throws Exception;

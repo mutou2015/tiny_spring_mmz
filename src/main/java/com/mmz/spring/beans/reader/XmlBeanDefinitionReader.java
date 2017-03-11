@@ -8,16 +8,19 @@ import java.util.Map.Entry;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.mmz.spring.beans.factory.BeanDefinitionRegistry;
 import com.mmz.spring.beans.factory.BeanFactory;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
 import com.mmz.spring.beans.factory.config.BeanReference;
 import com.mmz.spring.beans.factory.config.DefaultBeanDefinition;
 import com.mmz.spring.beans.factory.config.PropertyValue;
+import com.mmz.spring.beans.factory.xml.BeanDefinitionParserDelegate;
 import com.mmz.spring.beans.factory.xml.ComponentScanBeanDefinitionParser;
 import com.mmz.spring.beans.resource.Resource;
 import com.mmz.spring.beans.resource.ResourceLoader;
@@ -30,8 +33,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 	
 	private ArrayList<Element> componentList = new ArrayList<Element>();
 	
-	public XmlBeanDefinitionReader(BeanFactory beanFactory) {
-		super(beanFactory);
+	private BeanDefinitionParserDelegate delegate = new BeanDefinitionParserDelegate();
+	
+	public static final String BEAN_ELEMENT = BeanDefinitionParserDelegate.BEAN_ELEMENT;
+	
+	public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
+		super(registry);
 		// TODO Auto-generated constructor stub
 	}
 	/**
@@ -48,11 +55,14 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 	protected void doLoadBeanDefinitions(InputStream inputStream) throws Exception {
 		// java提供的一种解析xml的工具类 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		// 命名空间开启
+		factory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = factory.newDocumentBuilder();
 		// 解析 XML 文档的输入流，得到一个 Document
 		Document doc = docBuilder.parse(inputStream);
 		// 解析bean
 		registerBeanDefinitions(doc);
+		
 		getRegistry().setBeanDefinitionMap(getBeanDefinitionMap());
 		inputStream.close();
 	}
@@ -76,57 +86,34 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 			Node node = nl.item(i);
 			if (node instanceof Element) {
 				Element ele = (Element) node;
-				nodeNameParser(ele);
+				if(delegate.isDefaultNamespace(node)){
+					parseDefaultElement(ele,delegate);
+				}
+				else{
+					delegate.parseCustomElement(ele,this.getRegistry());
+				}	
+				
 				
 			}
 		}
-		setIoc();
+		
 		
 	}
-	// 对元素进行分类
-	protected void nodeNameParser(Element ele){
-		String nodeName = ele.getNodeName();
-		if("bean".equals(nodeName))
-			beanList.add(ele);
-		else if("context:component-scan".equals(nodeName)){
-			componentList.add(ele);
-		}
-	}
-	// xml和注解两种方式加载BeanDefinition
-	protected void setIoc(){
-		try {
-			xmlBdDefinition(beanList);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	
+	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
 		
-		this.setBdParser(new ComponentScanBeanDefinitionParser(getRegistry()));
-		for(Element ele:componentList){
-			this.getBdParser().parse(ele); 
-		}
+		// 节点名为bean
+		 if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
+			processBeanDefinition(ele, delegate);
+		 }
+		 // 待有空扩展
+		
 	}
-	
-	protected void xmlBdDefinition(ArrayList<Element> beanList) throws Exception{
-		for(Element ele:beanList){
-			try {
-				processBeanDefinition(ele);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		for(Entry<String,BeanDefinition> entry:getBeanDefinitionMap().entrySet()){
-			createInstanceByLazy(entry.getValue());
-		}
-	}
-	
 	/**
 	 * 获取元素的id和class属性
 	 * @throws Exception 
 	 * */
-	protected void processBeanDefinition(Element ele) throws Exception {
-		
+	protected  void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate){
 		// 从这里开始往beanDefinition写入bean定义信息
 		BeanDefinition beanDefinition = new DefaultBeanDefinition();
 		processProperty(ele, beanDefinition);
@@ -137,9 +124,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
 		String scope = (ele.getAttribute("scope").equals("")?"singleton":ele.getAttribute("scope"));
 		beanDefinition.setScope(scope);
 		beanDefinition.setLazy_init(lazy_init);
-		getBeanDefinitionMap().put(name, beanDefinition);
-		
+		this.getRegistry().registerBeanDefinition(name, beanDefinition);
 	}
+	
+	
+	
+	
 	
 	protected void createInstanceByLazy(BeanDefinition beanDefinition) throws Exception{
 		// 获取懒加载属性

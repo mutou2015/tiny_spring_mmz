@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,9 +24,13 @@ import org.w3c.dom.Element;
 
 import com.mmz.spring.beans.annotation.Autowired;
 import com.mmz.spring.beans.annotation.Component;
+import com.mmz.spring.beans.annotation.Lazy;
+import com.mmz.spring.beans.annotation.Scope;
 import com.mmz.spring.beans.factory.BeanDefinitionRegistry;
 import com.mmz.spring.beans.factory.config.BeanDefinition;
+import com.mmz.spring.beans.factory.config.BeanReference;
 import com.mmz.spring.beans.factory.config.DefaultBeanDefinition;
+import com.mmz.spring.beans.factory.config.PropertyValue;
 import com.mmz.spring.beans.resource.Resource;
 import com.mmz.spring.beans.resource.ResourceLoader;
 import com.mmz.spring.beans.resource.UrlResource;
@@ -159,72 +164,110 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
     
     protected void annotationParser(Class clz){
     	Annotation[] typeAnnotations = clz.getAnnotations();
-    	for(Annotation typeAnt:typeAnnotations){
-    		if(typeAnt.annotationType()==Component.class){
-    			try {
-					
-					componentParser(clz,clz.newInstance());
-				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchBeanDefinitionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-    			
+    	
+    	BeanDefinition beanDefinition = new DefaultBeanDefinition();
+    	
+    	if(containsAnnotationType(typeAnnotations,Component.class)>-1){
+    		// 设置默认属性
+    		beanDefinition.setScope("singleton");
+    		beanDefinition.setLazy_init(false);
+    		// 根据注解重设
+    		if(containsAnnotationType(typeAnnotations,Scope.class)>-1){
+    			int temp = containsAnnotationType(typeAnnotations,Scope.class);
+    			String scope = ((Scope)typeAnnotations[temp]).value();
+    			beanDefinition.setScope(scope);
+    		}
+    		if(containsAnnotationType(typeAnnotations,Lazy.class)>-1){
+    			int temp = containsAnnotationType(typeAnnotations,Lazy.class);
+    			boolean lazy = ((Lazy)typeAnnotations[temp]).value();
+    			beanDefinition.setLazy_init(lazy);
     		}
     			
-    	}
     	
+    	try {
+			componentParser(clz,beanDefinition);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchBeanDefinitionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	}
     	
     }
 	
-    protected void componentParser(Class clz,Object bean) throws IllegalArgumentException, IllegalAccessException, NoSuchBeanDefinitionException, Exception {
-    	BeanDefinition beanDefinition = new DefaultBeanDefinition();
+    protected void componentParser(Class clz,BeanDefinition beanDefinition) throws IllegalArgumentException, IllegalAccessException, NoSuchBeanDefinitionException, Exception {
+    	
     	Field[] fileds = clz.getDeclaredFields();
     	beanDefinition.setBeanClass(clz);
     	beanDefinition.setBeanClassName(clz.getName());
-    	
     	for(Field field:fileds){
+    		field.setAccessible(true);
     		Annotation[] fieldAnnotations = field.getAnnotations();
-    		for(Annotation fieldAnt:fieldAnnotations){
-    			if(fieldAnt.annotationType()==Autowired.class){
-    				String tempname=StringUtils.getShortClassName(field.getName());
-    				if(this.registry.getBeanDefinition(tempname)==null&&this.registry.getBdDefinitionByType(field.getType())==null){
-    					componentParser(field.getType(),field.getType().newInstance());
-    				}
-    				try {
-    					
-    					Method declaredMethod = bean.getClass().getDeclaredMethod(
-    							"set" + tempname.substring(0, 1).toUpperCase()
-    									+ tempname.substring(1), field.getType());
-    					
-    					declaredMethod.setAccessible(true);
-    					// 调用set方法为bean注入属性值
-    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(tempname)!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
-    				} catch (NoSuchMethodException e) {
-    					Field declaredField = bean.getClass().getDeclaredField(field.getName());
-    					declaredField.getType();
-    					declaredField.setAccessible(true);
-    					declaredField.set(bean, this.registry.getBeanDefinition(tempname)!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
-    		    	
-    				} 
-    				
-    				
-    			}
+    		
+    		String tempname=StringUtils.getShortClassName(field.getName());
+    		PropertyValue pv = null;
+    		if(containsAnnotationType(fieldAnnotations,Autowired.class)>-1){
+    			BeanReference beanReference = new BeanReference(StringUtils.getShortClassName(field.getName()),field.getType());
+    			pv = new PropertyValue(tempname, beanReference);
+    		}
+    		else{
+    			pv = new PropertyValue(tempname, field.get(clz.newInstance()));
+        		
+    		}
+    		beanDefinition.getPropertyValues().addPropertyValue(pv);
+    	}
+//    	for(Field field:fileds){
+//    		Annotation[] fieldAnnotations = field.getAnnotations();
+//    		for(Annotation fieldAnt:fieldAnnotations){
+//    			if(fieldAnt.annotationType()==Autowired.class){
+//    				String tempname=StringUtils.getShortClassName(field.getName());
+//    				if(this.registry.getBeanDefinition(tempname)==null&&this.registry.getBdDefinitionByType(field.getType())==null){
+//    					componentParser(field.getType(),field.getType().newInstance());
+//    				}
+//    				try {
+//    					
+//    					Method declaredMethod = bean.getClass().getDeclaredMethod(
+//    							"set" + tempname.substring(0, 1).toUpperCase()
+//    									+ tempname.substring(1), field.getType());
+//    					
+//    					declaredMethod.setAccessible(true);
+//    					// 调用set方法为bean注入属性值
+//    					declaredMethod.invoke(bean,this.registry.getBeanDefinition(tempname)!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
+//    				} catch (NoSuchMethodException e) {
+//    					Field declaredField = bean.getClass().getDeclaredField(field.getName());
+//    					declaredField.getType();
+//    					declaredField.setAccessible(true);
+//    					declaredField.set(bean, this.registry.getBeanDefinition(tempname)!=null?this.registry.getBeanDefinition(tempname).getBean():this.registry.getBdDefinitionByType(field.getType()).getBean());
+//    		    	
+//    				} 
+//    				
+//    				
+//    			}
+//    		}
+//    	}
+    	
+    	this.registry.registerBeanDefinition(StringUtils.getShortClassName(clz.getName()), beanDefinition);
+    }
+    
+    /**
+     * 判断注解里有没有包含给定的注解，有则返回索引，没有返回-1
+     * */
+    protected Integer containsAnnotationType(Annotation[] arr,Class clz){
+    	for(int i=0;i<arr.length;i++){
+    		if(arr[i].annotationType()==clz){
+    			return i;
     		}
     	}
-    	beanDefinition.setBean(bean);
-    	this.registry.registerBeanDefinition(StringUtils.getShortClassName(clz.getName()), beanDefinition);
+    	return -1;
     }
     	
 	

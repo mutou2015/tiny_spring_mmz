@@ -30,6 +30,8 @@ import com.mmz.spring.exception.NoSuchBeanDefinitionException;
 import com.mmz.spring.utils.BeanFactoryUtils;
 import com.mmz.spring.utils.StringUtils;
 
+
+
 public abstract class AbstractBeanFactory implements BeanFactory{
 	
 	// 这个beanDefinitionMap可以理解为ioc容器中的内容，其中包含的是bean的定义信息，包括Bean,Class,还有PropertyValues属性
@@ -37,6 +39,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 
 	private final List<String> beanDefinitionNames = new ArrayList<String>();
 
+	// bean后处理器
 	private List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
 
 	private DefaultConvert convert;
@@ -52,7 +55,7 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	/**
 	 * Beanfactroy的核心方法，根据名字获取bean
 	 * */
-	public Object getBean(String name) throws Exception {
+	public Object getBean(String name)  {
 		
 		return doGetBean(name, null, null);
 
@@ -61,7 +64,9 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	@SuppressWarnings("unchecked")
 	protected <T> Object doGetBean(final String name,final Class<T> requiredType,final Object[] args){
 		// 首先根据该id获取对应的BeanDefinition，bean的定义信息
-		final BeanDefinition bd = getBeanDefinition(name);
+		
+		final BeanDefinition bd = getBeanDefinition(name)==null?getBdDefinitionByType(requiredType):getBeanDefinition(name);
+		
 		if(bd == null)
 			throw new RuntimeException("No bean named " + name + " is defined");
 		// 截取前缀之外的真是beanName
@@ -231,9 +236,10 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 	
 	
 	
+	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> requiredType) throws Exception {
 		
-		return null;
+		return (T) doGetBean(name, requiredType, null);
 	}
 	
 	public List getBeansForType(Class type) throws Exception {
@@ -292,7 +298,15 @@ public abstract class AbstractBeanFactory implements BeanFactory{
 		return factoryBeanObjectCache;
 	}
 
+	public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) throws Exception {
+		this.beanPostProcessors.add(beanPostProcessor);
+	}
 	
+	
+	
+	public List<BeanPostProcessor> getBeanPostProcessors() {
+		return this.beanPostProcessors;
+	}
 	
 	
 	

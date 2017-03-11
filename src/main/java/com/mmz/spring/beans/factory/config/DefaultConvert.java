@@ -67,7 +67,7 @@ public class DefaultConvert  implements Convert  {
 	
 	public <T> T convertIfNecessary(String propertyName, Object oldValue,
 			Class<T> requiredType){
-		if(oldValue.getClass().equals(requiredType))
+		if(oldValue==null||oldValue.getClass().equals(requiredType))
 			return (T) oldValue;
 		PropertyEditor editor = null;
 		if (requiredType != null) {

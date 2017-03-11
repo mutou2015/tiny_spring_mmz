@@ -3,9 +3,12 @@ package com.mmz.spring.beans.factory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.mmz.spring.beans.BeanPostProcessor;
 import com.mmz.spring.beans.BeanWrapper;
 import com.mmz.spring.beans.BeanWrapperImpl;
 import com.mmz.spring.beans.PropertyEditorRegistrySupport;
@@ -14,14 +17,6 @@ import com.mmz.spring.beans.factory.config.BeanFactoryAware;
 import com.mmz.spring.beans.factory.config.BeanReference;
 import com.mmz.spring.beans.factory.config.DefaultConvert;
 import com.mmz.spring.beans.factory.config.PropertyValue;
-
-
-
-
-
-
-
-
 
 
 
@@ -45,7 +40,8 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 			// 也就是所谓的创建实例和自动装配，那么会优先进行这个引用类型的装配，完成之后再继续上一层bean的装配
 			if (value instanceof BeanReference) {
 				BeanReference beanReference = (BeanReference) value;
-				value = getBean(beanReference.getName());
+				
+				value = getBean(beanReference.getName(),beanReference.getType());
 			}
 			// 
 			Class targetType = propertyValue.getTragetType();
@@ -61,7 +57,7 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 				// 调用getMethods方法输出的是自身的public方法和父类Object的public方法。
 				Method declaredMethod = bean.getClass().getDeclaredMethod(
 						"set" + propertyValue.getName().substring(0, 1).toUpperCase()
-								+ propertyValue.getName().substring(1), convertedValue.getClass());
+								+ propertyValue.getName().substring(1), targetType);
 				// 实际上setAccessible是启用和禁用访问安全检查的开关,并不是为true就能访问为false就不能访问
 				// private 属性方法必须设置为true才能访问，不然报错
 				// public method设置true，能提升性能
@@ -107,15 +103,15 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 		final Object bean = (instanceWrapper != null ? instanceWrapper.getWrappedInstance() : null);
 		Class<?> beanType = (instanceWrapper != null ? instanceWrapper.getWrappedClass() : null);
 		
-		// 由子类AutowireCapableBeanFactory实现
+		// 相当于populateBean(beanName, mbd, instanceWrapper);
 		try {
 			applyPropertyValues(bean, mbd);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return bean;
+		Object wrappedBean = initializeBean(beanName,bean,mbd);
+		return wrappedBean;
 	}
 	
 	public Object doCreateBean(BeanDefinition mbd) throws Exception {
@@ -133,6 +129,37 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 //				return bean;
 //			}
 	
+	protected Object initializeBean(final String beanName, final Object bean, BeanDefinition mbd) {
+		if(bean instanceof BeanNameAware){
+			((BeanNameAware) bean).setBeanName(beanName);
+		}
+		if(bean instanceof BeanFactoryAware){
+			((BeanFactoryAware) bean).setBeanFactory(this);
+		}
+		Object wrappedBean = bean;
+		try {
+			 wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		invokeCustomInitMethod(beanName, wrappedBean, mbd);
+		try {
+			 wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return wrappedBean;
+	}
+	
+	private void invokeCustomInitMethod(String beanName, Object bean, BeanDefinition mbd) {
+		
+		
+	}
+
+
+
 	/**
 	 * 根据类的Class对象创建类的实例
 	 * @throws Exception 
@@ -193,6 +220,28 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 		return new BeanWrapperImpl(instance);
 	}
 
+	public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName) throws Exception
+			 {
+
+		Object result = existingBean;
+		for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
+			result = beanProcessor.postProcessBeforeInitialization(result, beanName);
+			
+		}
+		return result;
+	}
+	public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName) throws Exception
+	 {
+
+		Object result = existingBean;
+		for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
+			result = beanProcessor.postProcessAfterInitialization(result, beanName);
+			
+		}
+		return result;
+	 }
+	
+	
 
 
 	

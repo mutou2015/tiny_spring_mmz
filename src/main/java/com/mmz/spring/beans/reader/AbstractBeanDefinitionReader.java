@@ -13,14 +13,14 @@ import com.mmz.spring.beans.resource.ResourceLoader;
 
 public abstract class AbstractBeanDefinitionReader implements BeanDefinitionReader {
 	
-	private BeanDefinitionRegistry beanFactory;
+	private BeanDefinitionRegistry registry;
 	
     private ResourceLoader resourceLoader;
 
     private BeanDefinitionParser bdParser;
     
-    protected AbstractBeanDefinitionReader(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    protected AbstractBeanDefinitionReader(BeanDefinitionRegistry beanFactory) {
+        this.registry = beanFactory;
     }
     
   
@@ -30,11 +30,11 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
     }
 
 	public BeanDefinitionRegistry getRegistry() {
-		return beanFactory;
+		return registry;
 	}
 
-	public void setBeanFactory(BeanDefinitionRegistry beanFactory) {
-		this.beanFactory = beanFactory;
+	public void setBeanFactory(BeanDefinitionRegistry registry) {
+		this.registry = registry;
 	}
 
 	public BeanDefinitionParser getBdParser() {
@@ -46,7 +46,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 	}
     
 	Map<String,BeanDefinition>  getBeanDefinitionMap(){
-		return this.beanFactory.getBeanDefinitionMap();
+		return this.registry.getBeanDefinitionMap();
 	};
     
 	
